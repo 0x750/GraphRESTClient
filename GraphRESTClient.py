@@ -31,7 +31,6 @@ class GraphRESTClient:
                 _route = route
 
                 data = []
-                
                 URI = "graph.microsoft.com"
 
                 while _next_link_exists and _current_page < _pages:
