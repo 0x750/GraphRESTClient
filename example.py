@@ -9,9 +9,11 @@ client = grc.GraphRESTClient(
     }
 )
 
-rep = client.add_route('GET', '/v1.0/users').use({
-    'pages' : 1
-})
+rep = client.api(
+        '/v1.0/users'
+    ).select(
+        'displayName,mail'
+    ).top(1).pages(2).get()
 
-print(rep)
 print(client)
+print(rep)

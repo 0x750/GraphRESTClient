@@ -6,18 +6,26 @@ class GraphRESTClient:
 
     class GraphRESTRoute:
 
-        def __init__(self, method, route, client):
+        def __init__(self, route, client):
             self.route = route
-            if method in ['GET', 'POST']:
-                self.method = method
-            else:
-                raise ValueError(method + ' : This method is not yet supported')
-            self._closure = self._make_closure(self.route, self.method, client)
+            self.options = {
+                'query_options' : {},
+                'pages' : 1
+            }
+            self._client = client
 
         def _make_closure(self, route, method, client):
+
+            # Add query options to route
+            if(self.options['query_options']):
+                route = route + "?" + '&'.join([
+                        k + "=" + urllib.parse.quote(str(i))
+                        for k, i in self.options['query_options'].items()
+                ])
+
             def _closure(options=dict()):
                 #Multiple pages management
-                _pages = options.get('pages', 1)
+                _pages = options['pages']
                 _current_page = 0
                 _next_link_exists = True
                 _route = route
@@ -51,18 +59,29 @@ class GraphRESTClient:
                 return [a for s in data for a in s]
             return _closure
 
-        def use(self, options=None):
-            return self._closure(options)
+        def get(self):
+            return self._make_closure(self.route, 'GET', self._client)(self.options)
+
+        def top(self, top_value):
+            self.options['query_options']['$top'] = top_value
+            return self
+
+        def select(self, select_value):
+            self.options['query_options']['$select'] = select_value
+            return self
+
+        def pages(self, pages_value):
+            self.options['pages'] = pages_value
+            return self
 
         def __str__(self):
-            return "  " + self.method + '\t' + self.route
+            return "  " + '\t' + self.route
 
     def __init__(self, domain, application):
         self._OAuthcreds = application
         self._domain = domain
         self._session_token = self._get_session_token(self._OAuthcreds)
-        self.routes = []
-
+        
     def _get_session_token(self, cred):
         URI = "login.microsoftonline.com"
         headers = {
@@ -80,20 +99,11 @@ class GraphRESTClient:
             conn.close()
             return json.loads(data)
 
-    def add_route(self, route, method):
-        self.routes.append(self.GraphRESTRoute(route, method, self))
-        return self.routes[len(self.routes) - 1]
-
-    def get_route(self, route, method):
-        for _route in self.routes:
-            if hash(_route.route + _route.method) == hash(route + method):
-                return _route
-        return self.add_route(route, method)
+    def api(self, route):
+        return self.GraphRESTRoute(route, self)
 
     def __str__(self):
         return """\
 Graph REST Client
 Tenant URL : """ + self._domain + """
-Session Token : """ + self._session_token['token_type'] + " " + self._session_token['access_token'][:40] + """...
-Routes :\n""" + '\n'.join(["  " + str(self.routes.index(route)) + str(route)
-    for route in self.routes])
+Session Token : """ + self._session_token['token_type'] + " " + self._session_token['access_token'][:40] + "..."
