@@ -21,9 +21,6 @@ rep = client.api(
     ).select(
         ['displayName', 'mail']
     ).top(1).pages(2).get()
-
-print(client)
-print(rep)
 ```
 
 This request will return the display name and mail for the first user of the 2 first pages.
