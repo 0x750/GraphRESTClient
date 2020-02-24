@@ -19,7 +19,7 @@ client = grc.GraphRESTClient(
 rep = client.api(
         '/v1.0/users'
     ).select(
-        'displayName,mail'
+        ['displayName', 'mail']
     ).top(1).pages(2).get()
 
 print(client)
@@ -31,6 +31,6 @@ This request will return the display name and mail for the first user of the 2 f
 ### TODO
 - [x] More standard API
 - [ ] POST, PATCH, DELETE methods
-- [ ] Auth Token management
-    - [ ] Renew Token
-    - [ ] Auto check and renew token
+- [x] Auth Token management
+    - [x] Renew Token
+    - [x] Auto check and renew token

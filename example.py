@@ -12,7 +12,7 @@ client = grc.GraphRESTClient(
 rep = client.api(
         '/v1.0/users'
     ).select(
-        'displayName,mail'
+        ['displayName', 'mail']
     ).top(1).pages(2).get()
 
 print(client)
